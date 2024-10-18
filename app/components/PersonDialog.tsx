@@ -12,6 +12,16 @@ interface PersonDialogProps {
   handleSubmit: () => void;
 }
 
+// Helper function to format date for input
+// const formatDateForInput = (date: string | Date | null): string => {
+//   if (!date) return '';
+//   const d = new Date(date);
+//   const year = d.getFullYear();
+//   const month = (`0${d.getMonth() + 1}`).slice(-2); // Ensure month is two digits
+//   const day = (`0${d.getDate()}`).slice(-2); // Ensure day is two digits
+//   return `${year}-${month}-${day}`;
+// }
+
 const PersonDialog: React.FC<PersonDialogProps> = ({ open, handleClose, currentPerson, setCurrentPerson, handleSubmit }) => (
   <Dialog open={open} onClose={handleClose}>
     <DialogTitle>{currentPerson ? 'Edit Person' : 'Add Person'}</DialogTitle>
@@ -38,13 +48,26 @@ const PersonDialog: React.FC<PersonDialogProps> = ({ open, handleClose, currentP
         value={currentPerson?.phone || ''}
         onChange={e => setCurrentPerson(prev => ({ ...prev!, phone: e.target.value }))}
       />
-      <TextField
+      {/* <TextField
         margin="dense"
         label="Date of Birth"
         fullWidth
         value={currentPerson?.dob || ''}
         onChange={e => setCurrentPerson(prev => ({ ...prev!, dob: e.target.value }))}
+      /> */}
+      <TextField
+        margin="dense"
+        label="Date of Birth"
+        type="date" // Set input type to "date"
+        fullWidth
+        // value={formatDateForInput(currentPerson?.dob || '')} // Format date for input
+        value={(currentPerson?.dob || '')} // Format date for input
+        onChange={e => setCurrentPerson(prev => ({ ...prev!, dob: e.target.value }))}
+        InputLabelProps={{
+          shrink: true, // Ensure the label stays when a date is selected
+        }}
       />
+
     </DialogContent>
     <DialogActions>
       <Button onClick={handleClose} color="primary">
