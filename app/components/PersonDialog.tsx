@@ -1,7 +1,7 @@
 //'use client'
 
 import React, {useState, useEffect } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Snackbar } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Snackbar, Typography } from '@mui/material';
 // import {LocalizationProvider} from '@mui'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import {DatePicker} from '@mui/x-date-pickers/DatePicker';
@@ -46,6 +46,9 @@ const PersonDialog: React.FC<PersonDialogProps> = ({ open, handleClose, currentP
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   }
+
+  // Get today's date
+  const today = dayjs();
 
   return(
 
@@ -92,12 +95,18 @@ const PersonDialog: React.FC<PersonDialogProps> = ({ open, handleClose, currentP
             label="Date of Birth"
             value={currentPerson?.dob ? dayjs(currentPerson.dob) : null}
             onChange={(newValue) => setCurrentPerson(prev => ({ ...prev!, dob:newValue?.toISOString() || '' }))}
+            maxDate={today} // Prevent selecting future dates
             slotProps={{
               textField: { fullWidth: true, margin: 'dense'},
             }}
           />
         </LocalizationProvider>
-        
+        {/* Reminder message for form validation */}
+        {!isFormValid && (
+          <Typography color="error" variant="body2">
+            Please fill in all fields before submitting.
+          </Typography>
+        )}
 
       </DialogContent>
       <DialogActions>
