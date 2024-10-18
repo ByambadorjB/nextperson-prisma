@@ -20,7 +20,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
         console.log('Received data:', body); // Log the incoming data
 
         const {firstname, lastname, phone, dob} = body;
-        if (!firstname || !lastname || !phone) {
+        if (!firstname || !lastname || !phone || !dob) {
+            console.log('Received data:', req.body);
             return new Response('Missing required fields', {
                 status: 400,
             })

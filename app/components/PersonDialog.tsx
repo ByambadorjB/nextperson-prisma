@@ -1,7 +1,12 @@
 //'use client'
 
-import React from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button } from '@mui/material';
+import React, {useState, useEffect } from 'react';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Snackbar } from '@mui/material';
+// import {LocalizationProvider} from '@mui'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import {DatePicker} from '@mui/x-date-pickers/DatePicker';
+import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
 import { Person } from '../lib/person';
 
 interface PersonDialogProps {
@@ -12,72 +17,110 @@ interface PersonDialogProps {
   handleSubmit: () => void;
 }
 
-// Helper function to format date for input
-// const formatDateForInput = (date: string | Date | null): string => {
-//   if (!date) return '';
-//   const d = new Date(date);
-//   const year = d.getFullYear();
-//   const month = (`0${d.getMonth() + 1}`).slice(-2); // Ensure month is two digits
-//   const day = (`0${d.getDate()}`).slice(-2); // Ensure day is two digits
-//   return `${year}-${month}-${day}`;
-// }
+const PersonDialog: React.FC<PersonDialogProps> = ({ open, handleClose, currentPerson, setCurrentPerson, handleSubmit }) => {
+  const [isFormValid, setIsFormValid] = useState(false); // Declare state here
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-const PersonDialog: React.FC<PersonDialogProps> = ({ open, handleClose, currentPerson, setCurrentPerson, handleSubmit }) => (
-  <Dialog open={open} onClose={handleClose}>
-    <DialogTitle>{currentPerson ? 'Edit Person' : 'Add Person'}</DialogTitle>
-    <DialogContent>
-      <TextField
-        autoFocus
-        margin="dense"
-        label="First Name"
-        fullWidth
-        value={currentPerson?.firstname || ''}
-        onChange={e => setCurrentPerson(prev => ({ ...prev!, firstname: e.target.value }))}
-      />
-      <TextField
-        margin="dense"
-        label="Last Name"
-        fullWidth
-        value={currentPerson?.lastname || ''}
-        onChange={e => setCurrentPerson(prev => ({ ...prev!, lastname: e.target.value }))}
-      />
-      <TextField
-        margin="dense"
-        label="Phone"
-        fullWidth
-        value={currentPerson?.phone || ''}
-        onChange={e => setCurrentPerson(prev => ({ ...prev!, phone: e.target.value }))}
-      />
-      {/* <TextField
-        margin="dense"
-        label="Date of Birth"
-        fullWidth
-        value={currentPerson?.dob || ''}
-        onChange={e => setCurrentPerson(prev => ({ ...prev!, dob: e.target.value }))}
-      /> */}
-      <TextField
-        margin="dense"
-        label="Date of Birth"
-        type="date" // Set input type to "date"
-        fullWidth
-        // value={formatDateForInput(currentPerson?.dob || '')} // Format date for input
-        value={(currentPerson?.dob || '')} // Format date for input
-        onChange={e => setCurrentPerson(prev => ({ ...prev!, dob: e.target.value }))}
-        InputLabelProps={{
-          shrink: true, // Ensure the label stays when a date is selected
-        }}
-      />
+  // Check if all fields are filled
+  useEffect(() => {
+    if (currentPerson?.firstname && currentPerson?.lastname && currentPerson?.phone && currentPerson?.dob) {
+      setIsFormValid(true);
+    } else {
+      setIsFormValid(false);
+    }
+  }, [currentPerson]);
 
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleClose} color="primary">
-        Cancel
-      </Button>
-      <Button onClick={handleSubmit} color="primary">
-        {currentPerson ? 'Update' : 'Add'}
-      </Button>
-    </DialogActions>
-  </Dialog>
-);
+  const handleFormSubmit = () => {
+    // Check if the form is valid before proceeding
+    if (!isFormValid) {
+      setSnackbarOpen(true); //// Open Snackbar if form is invalid
+      // You can add any alert or message here if needed
+      console.warn('Form is not valid, please fill in all fields.');
+      return; // Stop the submission process
+    }
+    
+    // Call the original handleSubmit function if form is valid
+    handleSubmit();
+  };
 
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  }
+
+  return(
+
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>{currentPerson ? 'Edit Person' : 'Add Person'}</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="First Name"
+          fullWidth
+          value={currentPerson?.firstname || ''}
+          onChange={e => setCurrentPerson(prev => ({ ...prev!, firstname: e.target.value }))}
+        />
+        <TextField
+          margin="dense"
+          label="Last Name"
+          fullWidth
+          value={currentPerson?.lastname || ''}
+          onChange={e => setCurrentPerson(prev => ({ ...prev!, lastname: e.target.value }))}
+        />
+        <TextField
+          margin="dense"
+          label="Phone"
+          fullWidth
+          value={currentPerson?.phone || ''}
+          onChange={e => setCurrentPerson(prev => ({ ...prev!, phone: e.target.value }))}
+        />
+      
+        {/* <TextField
+          margin="dense"
+          label="Date of Birth"
+          type="date" // Set input type to "date"
+          fullWidth
+          // value={formatDateForInput(currentPerson?.dob || '')} // Format date for input
+          value={(currentPerson?.dob || '')} // Format date for input
+          onChange={e => setCurrentPerson(prev => ({ ...prev!, dob: e.target.value }))}
+          InputLabelProps={{
+            shrink: true, // Ensure the label stays when a date is selected
+          }}
+        /> */}
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker 
+            label="Date of Birth"
+            value={currentPerson?.dob ? dayjs(currentPerson.dob) : null}
+            onChange={(newValue) => setCurrentPerson(prev => ({ ...prev!, dob:newValue?.toISOString() || '' }))}
+            slotProps={{
+              textField: { fullWidth: true, margin: 'dense'},
+            }}
+          />
+        </LocalizationProvider>
+        
+
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={handleFormSubmit} 
+          color="primary"
+          // disabled={!isFormValid}
+        >
+          {currentPerson ? 'Update' : 'Add'}
+        </Button>
+      </DialogActions>
+
+      {/* Snackbar for additional user feedback */}
+      <Snackbar 
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        message="Please fill in all fields before submitting."
+      />
+    </Dialog>
+  );
+};
+  
 export default PersonDialog;
